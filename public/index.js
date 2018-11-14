@@ -2,22 +2,24 @@
 // http://picsterv2-env.x99288ydcg.us-east-2.elasticbeanstalk.com:80/data.json
 // http://127.0.0.1:80/data.json
 
+const url = "http://127.0.0.1:8081/data.json";
+
 class TopBar {
     constructor(iGrid, aList) {
         $('#imageGridBtn').click(function () {
-            $('#albumList').addClass('d-none');
-            $('#imageGrid').removeClass('d-none');
+            $('#albumList').hide();
+            $('#imageGrid').show();
             iGrid.initialize();
         });
         $('#albumListBtn').click(function () {
-            $('#imageGrid').addClass('d-none');
-            $('#albumList').removeClass('d-none');
+            $('#imageGrid').hide();
+            $('#albumList').show();
             aList.initialize();
         });
         $('#searchBtn').click(function (e) {
             var title = $('#searchField').val();
-            $('#imageGrid').removeClass('d-none');
-            $('#albumList').addClass('d-none');
+            $('#imageGrid').show();
+            $('#albumList').hide();
             iGrid.initialize(null, title)
         });
     }
@@ -27,17 +29,25 @@ class ImageDetail {
     constructor() {
         $('#imageDetail').click(function () {
             $('#imageDetail').hide();
+            $('#imageGrid').show();
         });
     }
 
     initialize(imageId) {
-        $.getJSON("http://picsterv2-env.x99288ydcg.us-east-2.elasticbeanstalk.com:80/data.json").then(imageList => this.render(imageList, imageId));
+        $.getJSON(url).then(imageList => this.render(imageList, imageId));
     }
 
     render(imageList, imageId) {
         var str = this.createHTML(imageList, imageId);
-        $('#imageDetailContent').empty();
-        $('#imageDetailContent').append(str);
+        $('#imageDetail').empty();
+        $('#imageDetail').append(str);
+        if($(window).width() > 700){
+            $('#imageDetail').addClass('modal');
+        } else {
+            $('#imageGrid').hide();
+            $('#imageDetail').removeClass('modal');
+            $('#imageDetailContent').removeClass('modal-content');
+        }
         $('#imageDetail').show();
     }
 
@@ -47,8 +57,8 @@ class ImageDetail {
         });
         var image = imageListFiltered[0];
         var index = imageList.findIndex(item => item.id === imageId);
-        var str = "<img src='" + imageList[index].img + "' class='image'>" +
-            "<span><button class='btn btn-light'><i class='far fa-heart'></i></button>" + imageList[index].rating + " Likes</span>";
+        var str = "<span id='closeButton' class='close'><div style='text-align: right;'>&times;</div></span><div id='imageDetailContent' class='modal-content'><img src='" + imageList[index].img + "' class='image'>" +
+            "<span><button class='btn btn-light'><i class='far fa-heart'></i></button>" + imageList[index].rating + " Likes</span></div></div></div>";
         return str;
     }
 }
@@ -57,14 +67,14 @@ class AlbumList {
     constructor(iGrid) {
         $('#albumList').click(function (e) {
             var album = e.target.getAttribute('data-id');
-            $('#albumList').addClass('d-none');
-            $('#imageGrid').removeClass('d-none');
+            $('#albumList').hide();
+            $('#imageGrid').show();
             iGrid.initialize(album);
         });
     }
 
     initialize(album) {
-        $.getJSON("http://picsterv2-env.x99288ydcg.us-east-2.elasticbeanstalk.com:80/data.json").then(imageList => this.render(imageList));
+        $.getJSON(url).then(imageList => this.render(imageList));
     }
 
     render(imageList) {
@@ -113,7 +123,7 @@ class ImageGrid {
     }
 
     initialize(album, title){
-        $.getJSON("http://picsterv2-env.x99288ydcg.us-east-2.elasticbeanstalk.com:80/data.json").then(imageList => this.render(imageList, album, title));
+        $.getJSON(url).then(imageList => this.render(imageList, album, title));
     }
     
     render(images, album, title) {
